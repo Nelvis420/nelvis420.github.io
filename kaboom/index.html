@@ -18,7 +18,7 @@
     <meta name="twitter:image" content="https://nelvis420.github.io/kaboom/og-preview.jpg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Bangers&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Permanent+Marker&family=Comic+Neue:wght@700&display=swap" rel="stylesheet" />
     <style>
       :root {
         color-scheme: dark;
@@ -2539,7 +2539,7 @@
         ctx.lineJoin = "round";
         var widths = [], total = 0;
         for (var m = 0; m < word.length; m++) {
-          ctx.font = Math.round(80 * sizes[m]) + "px 'Bangers', 'Permanent Marker', cursive";
+          ctx.font = Math.round(80 * sizes[m]) + "px 'Comic Neue', 'Permanent Marker', cursive";
           var mw = ctx.measureText(word.charAt(m)).width;
           widths.push(mw);
           total += mw;
@@ -2551,7 +2551,7 @@
           var letterCx = lx + widths[li2] / 2;
           lx += widths[li2] - 2;
           var jitter = reducedMotion ? 0 : Math.sin(time * 5 + li2 * 1.3) * 1.6;
-          ctx.font = Math.round(80 * sizes[li2]) + "px 'Bangers', 'Permanent Marker', cursive";
+          ctx.font = Math.round(80 * sizes[li2]) + "px 'Comic Neue', 'Permanent Marker', cursive";
           ctx.save();
           ctx.translate(letterCx, drops[li2] + jitter);
           ctx.rotate(tilts[li2] + (reducedMotion ? 0 : Math.sin(time * 3 + li2) * 0.02));
