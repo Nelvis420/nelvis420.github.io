@@ -1,0 +1,41 @@
+name: Temporary Kaboom font fix
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply only the Kaboom font changes
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          p = pathlib.Path('kaboom/index.html')
+          s = p.read_text(encoding='utf-8')
+          old_fonts = 'family=Press+Start+2P&family=Permanent+Marker&family=Bangers'
+          new_fonts = 'family=Press+Start+2P&family=Permanent+Marker&family=Comic+Neue:wght@700'
+          assert s.count(old_fonts) == 1, 'Google Fonts link not found exactly once'
+          s = s.replace(old_fonts, new_fonts)
+          old_m = "ctx.font = Math.round(80 * sizes[m]) + \"px 'Bangers', 'Permanent Marker', cursive\";"
+          old_li = "ctx.font = Math.round(80 * sizes[li2]) + \"px 'Bangers', 'Permanent Marker', cursive\";"
+          assert s.count(old_m) == 1, 'first burst font line not found exactly once'
+          assert s.count(old_li) == 1, 'second burst font line not found exactly once'
+          s = s.replace(old_m, old_m.replace("'Bangers'", "'Comic Neue'"))
+          s = s.replace(old_li, old_li.replace("'Bangers'", "'Comic Neue'"))
+          assert "'Bangers'" not in s, 'quoted Bangers remains'
+          assert 'family=Comic+Neue:wght@700' in s
+          assert s.count("px 'Comic Neue', 'Permanent Marker', cursive") == 2
+          assert 'var word = "Waaahaaa!";' in s
+          assert s.count('https://nelvis420.github.io/kaboom/og-preview.jpg') == 2
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit the change
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git diff --stat
+          git add kaboom/index.html
+          git diff --cached --quiet || git commit -m 'Use Comic Neue Bold for Kaboom game-over burst'
+          git push
