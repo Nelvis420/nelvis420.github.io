@@ -1,0 +1,45 @@
+name: Temp Kaboom OG Patch
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Kaboom preview tags in head only
+        run: |
+          python3 - << 'PY'
+          import pathlib, re, sys
+          path = pathlib.Path("kaboom/index.html")
+          text = path.read_text(encoding="utf-8")
+          head, sep, rest = text.partition("</head>")
+          if not sep:
+              sys.exit("No </head> found")
+          def set_meta(head_text, key, value):
+              pattern = re.compile(r'<meta\s[^>]*?(?:property|name)="' + re.escape(key) + r'"[^>]*?>', re.IGNORECASE)
+              matches = list(pattern.finditer(head_text))
+              if len(matches) != 1:
+                  sys.exit(f"Expected exactly one {key} tag in head, found {len(matches)}")
+              match = matches[0]
+              new_tag, count = re.subn(r'content="[^"]*"', 'content="' + value + '"', match.group(0), count=1)
+              if count != 1:
+                  sys.exit(f"No content attribute found for {key}")
+              return head_text[:match.start()] + new_tag + head_text[match.end():]
+          head = set_meta(head, "og:url", "https://nelvis420.github.io/kaboom/")
+          head = set_meta(head, "og:image", "https://nelvis420.github.io/kaboom/og-preview.jpg")
+          head = set_meta(head, "twitter:image", "https://nelvis420.github.io/kaboom/og-preview.jpg")
+          path.write_text(head + sep + rest, encoding="utf-8")
+          for key in ["og:url", "og:image", "twitter:image"]:
+              m = re.search(r'<meta\s[^>]*?(?:property|name)="' + key + r'"[^>]*?>', head, re.IGNORECASE)
+              print(key, "->", m.group(0) if m else "missing")
+          PY
+      - name: Commit and push patched file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kaboom/index.html
+          git diff --cached --stat
+          git commit -m "Update Kaboom preview tags to og-preview.jpg"
+          git push
