@@ -75,9 +75,16 @@
         }
       }
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+      html { scroll-behavior: smooth; overscroll-behavior: none; }
       body {
         margin: 0;
+        /* Swipe lock (CSS layer): sideways drags are never handed to
+           the browser as a navigation gesture — vertical panning and
+           pinch zoom still work, and overscroll can never chain into
+           a swipe-back / swipe-forward exit. The script adds the
+           touch and history layers on top of this. */
+        overscroll-behavior: none;
+        touch-action: pan-y pinch-zoom;
         background: radial-gradient(1200px 600px at 80% -10%, var(--bg-deep), var(--bg));
         color: var(--ink);
         font-family: "Newsreader", Georgia, serif;
@@ -255,7 +262,7 @@
       .speed-wrap { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px 12px; }
       .speed-head { display: flex; justify-content: space-between; align-items: baseline; }
       .speed-head .val { font-family: "IBM Plex Mono", monospace; font-size: 12.5px; color: var(--amber); font-weight: 600; }
-      input[type="range"] { width: 100%; accent-color: var(--amber); margin: 6px 0 0; }
+      input[type="range"] { width: 100%; accent-color: var(--amber); margin: 6px 0 0; touch-action: none; }
       .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
       .toggle-row span { font-size: 15.5px; color: var(--ink-soft); }
       .toggle {
@@ -291,6 +298,7 @@
       #words { position: relative; }
       #words p { margin: 0 0 1em; }
       #words p:last-child { margin-bottom: 0; }
+      #words p.live-paper-text { white-space: pre-wrap; overflow-wrap: break-word; }
       .empty-note { color: var(--ink-faint); font-style: italic; font-size: 18px; }
       svg#silk { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 1; overflow: visible; }
       .w { position: relative; z-index: 2; display: inline-block; padding: 0 1.5px; border-radius: 4px; transition: color .3s; }
@@ -2635,6 +2643,7 @@
         applyPaper();
         var analysis=analyzeText(text);
         if (!analysis.tokens.length) { setStatus("No readable words in that text.", true); return; }
+        fileTextAwaitingAnalysis=null;
         analysis.factResults = checkFacts(analysis);
         factResults = analysis.factResults;
         renderFacts(factResults);
@@ -3035,6 +3044,62 @@
       });
       analyzeBtn.addEventListener("click", startRun);
 
+      /* ================= Live paper for manual entry =================
+         Words typed or pasted by hand belong on the paper right away,
+         before the spider is released. The preview uses the entry
+         box's exact current text, including its line breaks. File and
+         screenshot loaders fill the box programmatically instead:
+         loadWords marks that text as held, so it keeps today's path
+         and reaches the paper only when the spider analyzes it. */
+      var fileTextAwaitingAnalysis=null;
+      var manualInputReplacedHeldText=false;
+      function renderManualEntryOnPaper(){
+        var text=inputText.value;
+        if (S) {
+          cancelRun();
+          S=null;
+          spiderEl.classList.remove("on");
+          stopBtn.hidden=true;
+          analyzeBtn.disabled=false;
+          pauseBtn.disabled=true;
+          pauseBtn.textContent="Pause";
+          resetBtn.disabled=true;
+          docTitle.textContent="The page under the spider";
+          progressFill.style.width="0%";
+          progressTxt.textContent="0 / 0 words";
+        }
+        bookCover.hidden=true;
+        bookCover.classList.remove("opening");
+        wordsEl.querySelectorAll("p,.empty-note").forEach(function(n){ n.remove(); });
+        silkSvg.innerHTML="";
+        if (!text.trim()) {
+          var empty=document.createElement("p");
+          empty.className="empty-note";
+          empty.textContent="Nothing on the page yet. Type or upload some words above — then release the spider.";
+          wordsEl.insertBefore(empty, silkSvg);
+        } else {
+          var preview=document.createElement("p");
+          preview.className="live-paper-text";
+          preview.textContent=text;
+          wordsEl.insertBefore(preview, silkSvg);
+        }
+        sizeSilk();
+      }
+      inputText.addEventListener("beforeinput", function(e){
+        manualInputReplacedHeldText = fileTextAwaitingAnalysis!==null &&
+          inputText.selectionStart===0 &&
+          inputText.selectionEnd===inputText.value.length &&
+          /^insert/.test(e.inputType || "");
+      });
+      inputText.addEventListener("input", function(){
+        if (fileTextAwaitingAnalysis!==null) {
+          if (!inputText.value || manualInputReplacedHeldText) fileTextAwaitingAnalysis=null;
+          else { manualInputReplacedHeldText=false; return; }
+        }
+        manualInputReplacedHeldText=false;
+        renderManualEntryOnPaper();
+      });
+
       /* Word-list chips are dictionary lookups: click (or Enter/Space on
          a focused chip) shows the word's entry above the lists. */
       listsEl.addEventListener("click", function(ev){
@@ -3088,6 +3153,7 @@
         text=(text||"").replace(/\r\n?/g,"\n").replace(/[ \t]+\n/g,"\n").trim();
         if (!text) { setStatus("No words could be read from that "+sourceLabel+" — try another file, or paste the text.", true); dropText.textContent="No words found in that one."; return; }
         inputText.value=text;
+        fileTextAwaitingAnalysis=text;
         var wc=text.split(/\s+/).filter(Boolean).length;
         setStatus(sourceLabel.charAt(0).toUpperCase()+sourceLabel.slice(1)+" read — "+wc+" words pulled out of it. Release the spider!");
         dropText.textContent="Got "+wc+" words from your "+sourceLabel+".";
@@ -3186,6 +3252,53 @@
           setStatus("That document couldn't be read — try a PDF or Word (.docx) file instead.", true);
         });
       }
+
+      /* ================= Swipe lock =================
+         Locked in: a sideways swipe can NEVER carry the reader out
+         of this app — not during the intro, not mid-analysis, not
+         ever. Three layers hold the door:
+         1) CSS (above): overscroll-behavior: none plus
+            touch-action: pan-y pinch-zoom on the body, so the
+            browser never turns a sideways drag or an overscroll
+            into a back/forward navigation gesture.
+         2) Touch (below): the moment a one-finger drag reads as
+            sideways-dominant it is claimed by the page with
+            preventDefault on every move, so the gesture goes
+            nowhere at all. Vertical drags are left completely
+            alone (page and panel scrolling untouched), as are
+            pinch gestures and drags that start on the speed
+            slider, which needs its sideways drag to work.
+         3) History (below): a guard entry sits on the history
+            stack. If a swipe — or the back button — still manages
+            to trigger a back navigation, it lands on the guard and
+            is pushed straight back in, so the app never actually
+            leaves. Runs wrapped in try/catch: if the embedding
+            frame forbids history writes, layers 1 and 2 still hold. */
+      (function(){
+        function plantGuard(){
+          try { history.pushState({ spiderLock: true }, "", location.href); } catch (e) {}
+        }
+        plantGuard();
+        window.addEventListener("popstate", plantGuard);
+        var sx = 0, sy = 0, mode = 0; // 0 undecided · 1 sideways (locked) · 2 vertical (free) · 3 hands-off
+        document.addEventListener("touchstart", function(e){
+          if (e.touches.length !== 1) { mode = 3; return; }
+          sx = e.touches[0].clientX; sy = e.touches[0].clientY;
+          mode = (e.target && e.target.closest && e.target.closest('input[type="range"]')) ? 3 : 0;
+        }, { passive: true });
+        document.addEventListener("touchmove", function(e){
+          if (mode === 3 || mode === 2 || e.touches.length !== 1) return;
+          var dx = e.touches[0].clientX - sx, dy = e.touches[0].clientY - sy;
+          if (mode === 0) {
+            if (Math.abs(dx) < 9 && Math.abs(dy) < 9) return; // too small to call yet — let it through
+            mode = Math.abs(dx) > Math.abs(dy) ? 1 : 2;
+            if (mode === 2) return;
+          }
+          if (e.cancelable) e.preventDefault();
+        }, { passive: false });
+        document.addEventListener("touchend", function(){ mode = 0; }, { passive: true });
+        document.addEventListener("touchcancel", function(){ mode = 0; }, { passive: true });
+      })();
 
       window.addEventListener("resize", function(){ sizeSilk(); });
       if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ sizeSilk(); });
