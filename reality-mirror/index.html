@@ -600,7 +600,7 @@
         cursor:pointer;
         box-shadow:0 10px 32px rgba(255,209,102,.35);
       }
-      .open-btn:focus-visible, .info-btn:focus-visible, .sheet-close:focus-visible, .jukebox-close:focus-visible, .song-btn:focus-visible, .jukebox-back:focus-visible{
+      .open-btn:focus-visible, .info-btn:focus-visible, .sheet-close:focus-visible, .song-btn:focus-visible, .jukebox-back:focus-visible{
         outline:2px solid var(--accent);
         outline-offset:2px;
       }
@@ -674,7 +674,7 @@
         letter-spacing:-.01em;
         line-height:1.15;
       }
-      .sheet-close, .jukebox-close{
+      .sheet-close{
         appearance:none;
         flex:none;
         width:38px;height:38px;
@@ -706,8 +706,10 @@
          they appear). Opened by the transparent Jukebox button in the
          lower left of the bottom row.
          Tapping a song plays it; tapping another song switches to it;
-         the × or "Back to mirror" closes the list and returns to the
-         mirror (the song keeps playing). The Check Me Out Song row
+         the big bright "Back to Reality Mirror" button at the TOP of
+         the panel, in the header next to the Jukebox heading where
+         the × close control used to be, closes the list and returns
+         to the mirror (the song keeps playing). The Check Me Out Song row
          plays the condensed Check Me Out song until the complete full
          version arrives. */
       .jukebox{
@@ -727,11 +729,12 @@
       .jukebox-inner{max-width:520px;margin:0 auto}
       .jukebox-head{
         display:flex;
-        align-items:flex-start;
+        align-items:center;
         justify-content:space-between;
-        gap:16px;
+        gap:14px;
         margin-bottom:6px;
       }
+      .jukebox-head h2{flex:none}
       .jukebox h2{
         margin:0;
         font-size:26px;
@@ -777,20 +780,37 @@
       .song-btn.playing{border-color:var(--accent);background:rgba(255,209,102,.10)}
       .song-btn.playing .song-state{color:var(--accent)}
       .song-btn:disabled{opacity:.45;cursor:default}
+      /* The way out of the jukebox: one big, wide, bright button at
+         the TOP of the panel, in the header next to the Jukebox
+         heading — in the exact spot where the small × close control
+         used to be. It fills the rest of the header row beside the
+         heading, accent-bright and bold, so nobody has to hunt for
+         a way back to the mirror. There is no small × close control
+         anywhere in the panel, and no back button at the bottom. */
       .jukebox-back{
         appearance:none;
-        display:block;
-        margin:0 auto;
-        border:1px solid var(--panel-stroke);
-        background:var(--panel);
-        color:var(--text);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        flex:1 1 auto;
+        min-width:0;
+        min-height:56px;
+        margin:0;
+        border:0;
+        background:var(--accent);
+        color:var(--accent-ink);
         font:inherit;
-        font-weight:700;
-        font-size:15.5px;
-        padding:12px 26px;
+        font-weight:900;
+        font-size:clamp(16px, 4.4vw, 20px);
+        line-height:1.15;
+        text-align:center;
+        letter-spacing:.02em;
+        padding:14px 18px;
         border-radius:999px;
         cursor:pointer;
+        box-shadow:0 10px 32px rgba(255,209,102,.4);
       }
+      .jukebox-back:active{background:#ffdb85}
 
       /* Shutter button — big round transparent button, CENTERED on
          the bottom row, between the vertical Jukebox and Light capsules */
@@ -1051,7 +1071,7 @@
         <div class="jukebox-inner">
           <div class="jukebox-head">
             <h2>Jukebox</h2>
-            <button type="button" class="jukebox-close" id="btnCloseJukebox" aria-label="Close jukebox and back to the mirror">×</button>
+            <button type="button" class="jukebox-back" id="btnJukeboxBack">Back to Reality Mirror</button>
           </div>
           <div class="song-list">
             <button type="button" class="song-btn" data-song="v2" aria-pressed="false">
@@ -1098,8 +1118,6 @@
               <span>Kaboom</span>
             </a>
           </nav>
-
-          <button type="button" class="jukebox-back" id="btnJukeboxBack">Back to mirror</button>
         </div>
       </section>
 
@@ -1172,7 +1190,6 @@
         var btnCloseSnap = document.getElementById('btnCloseSnap');
         var btnJukebox = document.getElementById('btnJukebox');
         var jukebox = document.getElementById('jukebox');
-        var btnCloseJukebox = document.getElementById('btnCloseJukebox');
         var btnJukeboxBack = document.getElementById('btnJukeboxBack');
         var songBtns = jukebox.querySelectorAll('.song-btn[data-song]');
         var snapUrl = null;
@@ -1720,7 +1737,6 @@
           jukebox.setAttribute('aria-hidden', 'true');
         }
         btnJukebox.addEventListener('click', openJukebox);
-        btnCloseJukebox.addEventListener('click', closeJukebox);
         btnJukeboxBack.addEventListener('click', closeJukebox);
       })();
     </script>
