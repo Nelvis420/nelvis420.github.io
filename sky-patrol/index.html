@@ -307,6 +307,16 @@
         .introUI{ margin-bottom:calc(max(2.5vh, env(safe-area-inset-bottom)) + 92px); }
         #toast{ bottom:calc(238px + env(safe-area-inset-bottom)); }
       }
+      /* phone only: lift the Lefty/Righty selector one row up in the intro
+         stack (above the tip line) so in-app bottom chrome can't clip it.
+         Start, Controls and the rest of the stack keep their exact spots;
+         desktop sizes are untouched. */
+      @media (max-width: 600px), (max-height: 500px) and (orientation: landscape){
+        #btnStart{ order:1; }
+        #btnControls{ order:2; }
+        #handRow{ order:3; }
+        #introTip{ order:4; }
+      }
       @media (max-height: 500px){
         .titleBlock h1{ font-size:clamp(30px, 6.5vw, 52px); }
         #btnStart{ font-size:24px; padding:9px 44px; }
