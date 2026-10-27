@@ -1284,6 +1284,27 @@
         }
         btnLight.addEventListener('click', function () { setLight(!lightOn); });
 
+        /* ---------- Remembering a granted permission ----------
+           Once somebody allows the camera on this device, that one grant
+           is enough: the browser itself remembers it for this site, and
+           the app remembers it too — a small flag on this device, set the
+           moment a stream first runs and cleared if the browser ever
+           reports the permission as denied. On a later open, the check
+           below (Permissions API and/or this flag) sees the grant and
+           starts the camera directly: no prompt, no permission screen,
+           no re-request. The flag holds no picture and no personal
+           information — it only records that the camera was allowed. */
+        var GRANT_KEY = 'realityMirror.cameraGranted';
+        function readGrantedFlag() {
+          try { return !!window.localStorage && localStorage.getItem(GRANT_KEY) === '1'; } catch (e) { return false; }
+        }
+        function writeGrantedFlag() {
+          try { if (window.localStorage) localStorage.setItem(GRANT_KEY, '1'); } catch (e) {}
+        }
+        function clearGrantedFlag() {
+          try { if (window.localStorage) localStorage.removeItem(GRANT_KEY); } catch (e) {}
+        }
+
         /* ---------- Camera ----------
            The request must be made directly inside the START / Retry click:
            no awaits, timers, or permission pre-checks run before
@@ -1320,6 +1341,7 @@
           return parts.length ? 'Browser said: ' + parts.join(' — ') : '';
         }
         function showBlockedScreen(err) {
+          clearGrantedFlag(); // a genuine denial supersedes any remembered grant
           // Permission was denied or blocked earlier, so the browser will
           // NOT show an Allow prompt again until the user allows the
           // camera for this site by hand. Say exactly that, and exactly
@@ -1379,13 +1401,26 @@
           }
           if (s.addEventListener) s.addEventListener('inactive', onEnded);
         }
-        function handleCameraError(err, wasPlainRetry) {
+        function handleCameraError(err, wasPlainRetry, wasAutoStart) {
           cameraStarting = false;
           // A stream actually started earlier in this session: whatever
           // arrived now is an interruption of a working camera, not a
           // permission denial — never show the blocked screen for it.
           if (streamWasLive) {
             showStreamEndedScreen(errorDetail(err));
+            return;
+          }
+          if (wasAutoStart) {
+            // This request ran on its own at page load because permission
+            // was remembered as granted. The browser refused it anyway,
+            // so the grant is gone (revoked, or this device never kept
+            // it): forget the remembered grant and quietly return to the
+            // intro. An automatic request never earns a permission or
+            // blocked screen — if the person then taps START and the
+            // browser denies that, the normal guidance screen applies.
+            clearGrantedFlag();
+            starting.classList.add('hide');
+            intro.classList.remove('hide');
             return;
           }
           var name = err && err.name ? err.name : '';
@@ -1396,7 +1431,7 @@
           } else if (name === 'OverconstrainedError' && !wasPlainRetry) {
             // Should not happen with ideal-only constraints; if it does,
             // fall back to any camera rather than giving up.
-            requestCamera(true);
+            requestCamera(true, wasAutoStart);
           } else if (name === 'NotReadableError' || name === 'TrackStartError' || name === 'AbortError') {
             showFallback('Camera is busy', 'Your camera couldn\u2019t start — another app or browser tab may be using it. Close that app or tab, then tap Retry.', false, errorDetail(err));
           } else {
@@ -1407,6 +1442,7 @@
           cameraStarting = false;
           stream = s;
           streamWasLive = true;
+          writeGrantedFlag(); // permission granted on this device — remember it, so it is never asked for again
           watchStream(s);
           if (video.srcObject !== s) video.srcObject = s;
           hideFallback();
@@ -1420,7 +1456,7 @@
           }
           starting.classList.add('hide');
         }
-        function requestCamera(plain) {
+        function requestCamera(plain, autoStart) {
           cameraStarting = true;
           var constraints = plain
             ? { video: true, audio: false }
@@ -1429,11 +1465,11 @@
           try {
             result = navigator.mediaDevices.getUserMedia(constraints);
           } catch (err) {
-            handleCameraError(err, plain);
+            handleCameraError(err, plain, autoStart);
             return;
           }
           Promise.resolve(result).then(onStream, function (err) {
-            handleCameraError(err, plain);
+            handleCameraError(err, plain, autoStart);
           });
         }
         function startCamera() {
@@ -1464,6 +1500,52 @@
           requestCamera(false);
         }
         btnRetry.addEventListener('click', startCamera);
+
+        /* ---------- Returning visits: permission already granted ----------
+           When permission was already granted on this device, getUserMedia
+           resolves with the stream and shows NO prompt — the browser's
+           own grant is what carries across visits, so this request is not
+           a re-ask. That is why it may run on its own at page load,
+           without a tap: the gesture rule above governs the FIRST grant,
+           where the browser still has to ask. So on load, check the
+           remembered state first — the Permissions API where the browser
+           offers it, and the stored granted flag — and when either says
+           the camera is already allowed, skip the intro and go straight
+           to the live camera. When neither says so, nothing changes: the
+           intro shows, and the first request still comes from START. */
+        function autoStartCamera() {
+          if (streamIsLive() || cameraStarting) return;
+          if (window.isSecureContext === false) return;
+          if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') return;
+          hideFallback();
+          intro.classList.add('hide');
+          starting.classList.remove('hide');
+          requestCamera(false, true);
+        }
+        (function openIfAlreadyGranted() {
+          if (readGrantedFlag()) autoStartCamera();
+          if (navigator.permissions && navigator.permissions.query) {
+            try {
+              navigator.permissions.query({ name: 'camera' }).then(function (st) {
+                if (!st) return;
+                if (st.state === 'granted') {
+                  writeGrantedFlag();
+                  autoStartCamera();
+                } else if (st.state === 'denied') {
+                  clearGrantedFlag();
+                }
+                // Keep the remembered flag in step if the person changes
+                // the permission in the browser while the page is open.
+                if (st.addEventListener) {
+                  st.addEventListener('change', function () {
+                    if (st.state === 'granted') writeGrantedFlag();
+                    else if (st.state === 'denied') clearGrantedFlag();
+                  });
+                }
+              }).catch(function () {});
+            } catch (e) {}
+          }
+        })();
 
         /* ---------- START sound: the check-me-out Waaahaaa ----------
            Neil's own voice recording, embedded in the page itself as a
