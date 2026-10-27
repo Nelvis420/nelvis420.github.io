@@ -250,18 +250,19 @@
       .view-btn svg{width:16px;height:16px}
       /* Bottom row: the shutter is CENTERED, Light is a tall
          VERTICAL capsule on the right edge, and the Jukebox is the
-         same tall VERTICAL capsule all the way in the lower LEFT —
-         all three sharing one centre line (the bottom offset plus
-         translateY(50%)). The row sits raised well above the
-         bottom edge — centre line 188px up on wide screens,
-         180px up on narrow ones — so the capsules' bottom edges
-         sit more than 100px clear of the screen's bottom edge
-         and clear in-app browser bottom bars (e.g. when the page
-         is opened from inside Muse, whose bottom chrome was
-         cutting the buttons off on some phones) on phones,
-         tablets, and desktop alike. The mirror
-         view carries nothing else: no thumbnail links float on it
-         (they live inside the jukebox panel, below the songs).
+         same tall VERTICAL capsule all the way in the lower LEFT.
+         The shutter's centre line (the bottom offset plus
+         translateY(50%)) sits 188px up on wide screens, 180px up
+         on narrow ones. The two side capsules sit a little higher
+         still — centre line 212px up on wide screens, 204px up
+         on narrow ones — so their bottom edges sit more than
+         130px clear of the screen's bottom edge and clear in-app
+         browser bottom bars (e.g. when the page is opened from
+         inside Muse, whose bottom chrome was cutting the buttons
+         off on some phones) on phones, tablets, and desktop
+         alike. The mirror view carries nothing else: no thumbnail
+         links float on it (they live inside the jukebox panel,
+         below the songs).
          The capsules stay taller than wide, but each label reads
          the ordinary way — horizontal, letters upright, icon
          stacked above the word — so nobody has to tilt their head
@@ -270,7 +271,7 @@
       .jukebox-btn{
         position:absolute;
         left:calc(env(safe-area-inset-left, 0px) + 12px);
-        bottom:calc(env(safe-area-inset-bottom, 0px) + 188px);
+        bottom:calc(env(safe-area-inset-bottom, 0px) + 212px);
         transform:translateY(50%);
         flex-direction:column;
         justify-content:center;
@@ -339,7 +340,7 @@
       .light-btn{
         position:absolute;
         right:calc(env(safe-area-inset-right, 0px) + 12px);
-        bottom:calc(env(safe-area-inset-bottom, 0px) + 188px);
+        bottom:calc(env(safe-area-inset-bottom, 0px) + 212px);
         transform:translateY(50%);
         flex-direction:column;
         justify-content:center;
@@ -680,10 +681,10 @@
         .info-btn{top:calc(env(safe-area-inset-top, 0px) + 34px)}
         .mode-label{left:calc(env(safe-area-inset-left, 0px) + 12px);top:calc(env(safe-area-inset-top, 0px) + 34px);padding:6px 10px;font-size:11.5px}
         .view-btn{top:calc(env(safe-area-inset-top, 0px) + 34px);padding:7px 12px;font-size:14px}
-        .jukebox-btn{width:92px;min-height:140px;padding:12px 5px;font-size:15px;bottom:calc(env(safe-area-inset-bottom, 0px) + 180px);left:calc(env(safe-area-inset-left, 0px) + 10px)}
+        .jukebox-btn{width:92px;min-height:140px;padding:12px 5px;font-size:15px;bottom:calc(env(safe-area-inset-bottom, 0px) + 204px);left:calc(env(safe-area-inset-left, 0px) + 10px)}
         .jukebox-btn svg{width:18px;height:18px}
         .link-thumb img{height:100px}
-        .light-btn{width:92px;min-height:140px;padding:12px 5px;font-size:15px;bottom:calc(env(safe-area-inset-bottom, 0px) + 180px);right:calc(env(safe-area-inset-right, 0px) + 10px)}
+        .light-btn{width:92px;min-height:140px;padding:12px 5px;font-size:15px;bottom:calc(env(safe-area-inset-bottom, 0px) + 204px);right:calc(env(safe-area-inset-right, 0px) + 10px)}
         .light-btn svg{width:19px;height:19px}
         .shutter-btn{width:56px;height:56px;bottom:calc(env(safe-area-inset-bottom, 0px) + 180px)}
         .pair .half-label{font-size:11px;padding:5px 9px;bottom:8px}
