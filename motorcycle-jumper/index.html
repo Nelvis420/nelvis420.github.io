@@ -145,6 +145,24 @@
       /* ---------- Controls ---------- */
       #controls { position: absolute; inset: auto 0 0 0; display: none; pointer-events: none; padding: 0 14px calc(14px + env(safe-area-inset-bottom)); }
       #controls.on { display: block; }
+      /* Phone only: raise the bottom game controls well above
+         in-app bottom chrome. On a 667px-tall phone the throttle
+         previously sat ~14px from the edge, with the horn and
+         camera in the same bottom row. Lifting the whole row's
+         bottom padding puts the throttle/horn bottom edges
+         ~104px clear of the edge (camera, centred in the row,
+         sits higher still), fully visible and tappable on
+         shorter phones too. Desktop widths are untouched. */
+      @media (max-width: 700px) {
+        #controls { padding-bottom: calc(104px + env(safe-area-inset-bottom)); }
+      }
+      /* Short landscape phones: a smaller raise, so the lifted
+         row still fits the reduced height while staying clear
+         of bottom chrome. Wider/taller desktop layouts are
+         untouched by this query too. */
+      @media (max-height: 500px) and (max-width: 1024px) {
+        #controls { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
+      }
       .ctl-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; }
       .ctl-left { display: flex; flex-direction: column; gap: 8px; }
       .lean-row { display: flex; gap: 8px; }
@@ -274,6 +292,16 @@
       #introShade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,5,2,.42) 0%, rgba(10,5,2,0) 26%, rgba(10,5,2,0) 46%, rgba(10,5,2,.78) 78%, rgba(10,5,2,.94) 100%); }
       #introTop { display: none; }
       #introContent { position: relative; margin-top: auto; padding: 0 14px calc(14px + env(safe-area-inset-bottom)); text-align: center; }
+      /* Phone only: lift the intro bottom stack (including the
+         Controls button, which sits just above the home hint) so
+         it is not hugging the bottom edge / covered by chrome.
+         Desktop intro layout is unchanged. */
+      @media (max-width: 700px) {
+        #introContent { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+      }
+      @media (max-height: 500px) and (max-width: 1024px) {
+        #introContent { padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+      }
       /* Compact bottom bar: small START button + bus stepper side
          by side, pinned to the very bottom of the intro so nothing
          covers WaaahaaaMan in the art above. */
