@@ -450,9 +450,15 @@
         align-items:center;
         justify-content:flex-start;
         gap:18px;
-        padding:calc(env(safe-area-inset-top, 0px) + 34px) 10px calc(env(safe-area-inset-bottom, 0px) + 20px);
+        /* Bottom padding reserves the pinned START button's space
+           (its height plus its 20px bottom offset and a gap), so
+           when the intro content is taller than the screen and
+           scrolls, nothing — the "See yourself" line included —
+           ever ends up hidden behind the button. */
+        padding:calc(env(safe-area-inset-top, 0px) + 34px) 10px calc(env(safe-area-inset-bottom, 0px) + 110px);
         background:radial-gradient(ellipse at 50% 30%, #1d1d22 0%, #060607 75%);
         overflow-y:auto;
+        -webkit-overflow-scrolling:touch;
         transition:opacity .45s ease;
       }
       .intro.hide{opacity:0;pointer-events:none}
@@ -584,8 +590,24 @@
         .intro{justify-content:flex-start;gap:14px}
       }
       .intro .pair img{aspect-ratio:1125/667;object-fit:cover}
+      /* START — pinned to the bottom of the viewport, not the
+         bottom of the intro's flow. On a short phone screen the
+         in-flow button used to fall below the fold (behind the
+         tall mirror photo) and out of reach; fixed positioning
+         with a safe-area-aware bottom offset keeps it visible on
+         first load at any screen height, never cut off and never
+         under browser chrome, while the intro scrolls beneath it.
+         Look is unchanged: same large yellow pill, same label.
+         It lives inside .intro, so when the intro hides the button
+         fades and disables with it. */
       .open-btn{
         appearance:none;
+        position:fixed;
+        left:50%;
+        transform:translateX(-50%);
+        bottom:calc(env(safe-area-inset-bottom, 0px) + 20px);
+        z-index:70;
+        flex:none;
         border:0;
         background:var(--accent);
         color:var(--accent-ink);
@@ -595,7 +617,7 @@
         letter-spacing:.12em;
         padding:20px 10px;
         width:min(76vw, 360px);
-        margin-top:auto;
+        margin-top:0;
         border-radius:999px;
         cursor:pointer;
         box-shadow:0 10px 32px rgba(255,209,102,.35);
@@ -963,7 +985,10 @@
            crop), so the tweet overlay returns to its uncropped width. */
         .intro .tweet-overlay{width:34%}
         .intro .see-line{grid-area:line}
-        .intro .open-btn{grid-area:start}
+        /* Sideways, START stays pinned too — centred under the
+           title/line column (the grid's right half) rather than
+           across the whole screen, so it never covers the photo. */
+        .intro .open-btn{grid-area:start;left:calc(75% - 6px)}
       }
 
       .starting{
