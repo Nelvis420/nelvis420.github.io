@@ -544,7 +544,12 @@
           object-position: center;
         }
         #introUI { padding: 5% 4% 6%; }
-        #btnRow { margin-left: 40px; }
+        /* PLAY (and Controls, same row) raised well clear of in-app
+           bottom chrome on small phones: the row's bottom edge gains
+           15% of the stage height on top of the padding clearance, so
+           PLAY stays tappable in webviews whose bars eat the bottom
+           of the screen. Phone portrait only — desktop untouched. */
+        #btnRow { margin-left: 40px; margin-bottom: 15cqh; }
         h1.title { font-size: clamp(30px, 13cqw, 58px); }
         #qrChip { left: 10px; bottom: 10px; padding: 5px 5px 3px; }
         #qrChip .qt { font-size: 8px; }
@@ -797,7 +802,7 @@
         sun: [-346, 322], far: [-219, 400], sunPs: 1.79, farPs: 1.35, moose: [192, 81], hog: [79, 286],
         ram: [-10, 331], imp: [140, 348], shelf: [-330, 602], lampDx: -16,
         bubble: [850, 984], ceilFar: 725,
-        meter: [590, 1310, 165], panel: [347, 1049, 486, 281], meterText: [1186, 1215, 1279], meterS: 1.38,
+        meter: [590, 1210, 165], panel: [347, 949, 486, 281], meterText: [1086, 1115, 1179], meterS: 1.38,
         balloons: [[105, 770], [192, 852], [108, 1218], [198, 1302]]
       };
       // Portrait room width from the stage's real aspect, so the room
@@ -829,7 +834,7 @@
           ram: [Math.round(0.264 * w) - 322, 331], imp: [Math.round(0.590 * w) - 556, 348],
           shelf: [Math.round(w / 2) - 920, 602], lampDx: Math.round(0.529 * w) - 640,
           bubble: [w - 330, 984], ceilFar: w - 455,
-          meter: [cx, 1310, 165], panel: [cx - 243, 1049, 486, 281], meterText: [1186, 1215, 1279], meterS: 1.38,
+          meter: [cx, 1210, 165], panel: [cx - 243, 949, 486, 281], meterText: [1086, 1115, 1179], meterS: 1.38,
           balloons: [[105, 770], [192, 852], [108, 1218], [198, 1302]]
         };
       }
