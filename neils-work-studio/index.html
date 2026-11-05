@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neil's Work Studio</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #14100c;
+    color: #f5efe6;
+    font-family: Georgia, 'Times New Roman', serif;
+    text-align: center;
+    padding: 32px 16px 64px;
+  }
+  h1 {
+    font-size: 2.2em;
+    margin: 0 0 6px;
+    color: #ffd700;
+    letter-spacing: 1px;
+  }
+  .sub {
+    font-size: 1.15em;
+    font-style: italic;
+    color: #d8cdbd;
+    margin: 0 0 32px;
+  }
+  .movie {
+    max-width: 720px;
+    margin: 0 auto 16px;
+  }
+  .movie h2 {
+    font-size: 1.4em;
+    margin: 0 0 12px;
+    color: #fff;
+  }
+  video {
+    width: 100%;
+    max-height: 78vh;
+    border-radius: 12px;
+    background: #000;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6);
+  }
+  .blurb {
+    max-width: 720px;
+    margin: 0 auto;
+    font-size: 1.05em;
+    line-height: 1.6;
+    color: #e8ddcb;
+  }
+  .credit {
+    margin-top: 28px;
+    font-size: 0.85em;
+    color: #a99e8c;
+  }
+  .credit a { color: #c9b896; }
+</style>
+</head>
+<body>
+  <h1>Neil's Work Studio</h1>
+  <p class="sub">Some of Neil's Works in Progress</p>
+
+  <div class="movie">
+    <h2>The Dragon Story</h2>
+    <video controls playsinline preload="metadata" poster="poster.jpg">
+      <source src="dragon-story-movie-remake-cut10.mp4" type="video/mp4">
+      Your browser can't play this video. Try opening the page in another browser.
+    </video>
+  </div>
+
+  <p class="blurb">A movie made one scene at a time — a jewel, a sleeping dragon, a daring escape, and a champagne toast on the luxury jet home. Work in progress, more scenes coming.</p>
+
+  <p class="credit">Music: The Rise Of Heroes by Shane Ivers - <a href="https://www.silvermansound.com">https://www.silvermansound.com</a></p>
+</body>
+</html>
